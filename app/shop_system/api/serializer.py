@@ -47,9 +47,10 @@ class ReviewSerializer(serializers.ModelSerializer):
 class ReviewCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ["rating", "description", "shelf"]
+        fields = ["rating", "description", "shelf", "user"]
 
     def create(self, validated_data):
+
         buyer = validated_data.pop("user")
         reviewed_shelf = validated_data.pop("shelf")
 
@@ -75,5 +76,5 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
 class ReviewInfoSerializer(serializers.Serializer):
     review_count = serializers.IntegerField()
     review_average_rating = serializers.DecimalField(
-        max_digits=1, decimal_places=2, default=0
+        max_digits=3, decimal_places=2, default=0.0
     )

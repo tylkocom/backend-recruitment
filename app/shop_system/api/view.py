@@ -1,4 +1,5 @@
-from django.contrib.auth.models import User
+from decimal import ROUND_HALF_UP, Decimal
+
 from django.db.models import Avg, Count
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -43,24 +44,28 @@ class ReviewViewSet(viewsets.ModelViewSet):
     pagination_class.page_size = 2
 
     def perform_create(self, serializer):
-        user = User.objects.get(username="admin")
-        serializer.save(user=user)
+        serializer.save(user=self.request.user)
 
     def get_serializer_class(self):
         if self.action == "create":
             return ReviewCreateSerializer
         return super().get_serializer_class()
 
-    @action(detail=False)
+    @action(detail=False, methods=["get"])
     def info(self, request):
         reviews = Review.objects.all()
+        avg_rating = reviews.aggregate(average_rating=Avg("rating"))["average_rating"]
+        if avg_rating is not None:
+            avg_rating = Decimal(avg_rating).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+        else:
+            avg_rating = Decimal("0.00")
 
         serializer = ReviewInfoSerializer(
             {
                 "review_count": reviews.count(),
-                "review_average_rating": reviews.aggregate(
-                    average_rating=Avg("rating")
-                )["average_rating"],
+                "review_average_rating": avg_rating,
             }
         )
         return Response(serializer.data)

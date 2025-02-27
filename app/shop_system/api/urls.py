@@ -6,7 +6,7 @@ from .view import CartViewSet, OrderViewSet, ReviewViewSet, ShelfViewSet
 router = routers.DefaultRouter()
 router.register(r"carts", CartViewSet)
 router.register(r"orders", OrderViewSet)
-router.register(r"shelf", ShelfViewSet)
+router.register(r"shelf", ShelfViewSet, basename="shelf")
 router.register(r"review", ReviewViewSet, basename="review")
 
 urlpatterns = [
