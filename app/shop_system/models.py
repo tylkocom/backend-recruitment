@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.validators import MaxValueValidator
 from django.db import models
 
 
@@ -6,6 +7,19 @@ class Shelf(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     price = models.DecimalField(decimal_places=2, max_digits=16)
+
+
+class Review(models.Model):
+    description = models.TextField(null=True, blank=True)
+    rating = models.PositiveSmallIntegerField(validators=[MaxValueValidator(5)])
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+    shelf = models.ForeignKey(Shelf, on_delete=models.CASCADE, related_name="ratings")
+
+    def __str__(self):
+        return f"Review: {self.rating}"
 
 
 class Cart(models.Model):
