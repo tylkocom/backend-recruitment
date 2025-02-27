@@ -6,10 +6,21 @@ from ..models import Cart, Order, Review, Shelf
 
 class ShelfSerializer(serializers.ModelSerializer):
     reviews = serializers.SerializerMethodField()
+    reviews_count = serializers.IntegerField()
+    reviews_avg = serializers.DecimalField(
+        max_digits=3, decimal_places=2, read_only=True
+    )
 
     class Meta:
         model = Shelf
-        fields = ["name", "description", "price", "reviews"]
+        fields = [
+            "name",
+            "description",
+            "price",
+            "reviews",
+            "reviews_count",
+            "reviews_avg",
+        ]
 
     def get_reviews(self, obj):
         return obj.reviews.values_list("rating", flat=True)

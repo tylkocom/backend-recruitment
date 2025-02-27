@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.db.models import Avg
+from django.db.models import Avg, Count
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -29,6 +29,11 @@ class OrderViewSet(viewsets.ModelViewSet):
 class ShelfViewSet(viewsets.ModelViewSet):
     queryset = Shelf.objects.all()
     serializer_class = ShelfSerializer
+
+    def get_queryset(self):
+        return Shelf.objects.annotate(
+            reviews_avg=Avg("reviews__rating"), reviews_count=Count("reviews")
+        )
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
