@@ -1,12 +1,13 @@
+from django.urls import include, path
 from rest_framework import routers
-from .view import CartViewSet, OrderViewSet, ShelfViewSet
-from django.urls import path, include
+
+from .view import CartViewSet, OrderViewSet, ReviewViewSet, ShelfViewSet
 
 router = routers.DefaultRouter()
 router.register(r"carts", CartViewSet)
 router.register(r"orders", OrderViewSet)
-router.register(r"shelf", ShelfViewSet)
-
+router.register(r"shelf", ShelfViewSet, basename="shelf")
+router.register(r"review", ReviewViewSet, basename="review")
 
 urlpatterns = [
     path("", include(router.urls)),
