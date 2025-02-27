@@ -1,12 +1,18 @@
+from django.db.models.query_utils import Q
 from rest_framework import serializers
 
 from ..models import Cart, Order, Review, Shelf
 
 
 class ShelfSerializer(serializers.ModelSerializer):
+    reviews = serializers.SerializerMethodField()
+
     class Meta:
         model = Shelf
-        fields = ["name", "description", "price"]
+        fields = ["name", "description", "price", "reviews"]
+
+    def get_reviews(self, obj):
+        return obj.reviews.values_list("rating", flat=True)
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -24,6 +30,35 @@ class OrderSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
+        fields = ["rating", "description", "shelf", "user"]
+
+
+class ReviewCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ["rating", "description", "shelf"]
+
+    def create(self, validated_data):
+        buyer = validated_data.pop("user")
+        reviewed_shelf = validated_data.pop("shelf")
+
+        was_bought = reviewed_shelf.carts.filter(
+            Q(owner=buyer) & Q(status=Cart.ORDERED)
+        ).exists()
+
+        if not was_bought:
+            raise serializers.ValidationError("You need to buy a shelf first")
+
+        already_reviewed = reviewed_shelf.reviews.filter(user=buyer).exists()
+
+        if already_reviewed:
+            raise serializers.ValidationError("You already reviewed this product")
+
+        review = Review.objects.create(
+            user=buyer, shelf=reviewed_shelf, **validated_data
+        )
+
+        return review
 
 
 class ReviewInfoSerializer(serializers.Serializer):

@@ -1,12 +1,15 @@
+from django.contrib.auth.models import User
 from django.db.models import Avg
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from ..models import Cart, Order, Review, Shelf
 from .serializer import (
     CartSerializer,
     OrderSerializer,
+    ReviewCreateSerializer,
     ReviewInfoSerializer,
     ReviewSerializer,
     ShelfSerializer,
@@ -31,6 +34,17 @@ class ShelfViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+    pagination_class = PageNumberPagination
+    pagination_class.page_size = 2
+
+    def perform_create(self, serializer):
+        user = User.objects.get(username="admin")
+        serializer.save(user=user)
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return ReviewCreateSerializer
+        return super().get_serializer_class()
 
     @action(detail=False)
     def info(self, request):

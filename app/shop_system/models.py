@@ -16,7 +16,7 @@ class Review(models.Model):
         User,
         on_delete=models.CASCADE,
     )
-    shelf = models.ForeignKey(Shelf, on_delete=models.CASCADE, related_name="ratings")
+    shelf = models.ForeignKey(Shelf, on_delete=models.CASCADE, related_name="reviews")
 
     def __str__(self):
         return f"Review: {self.rating}"
